@@ -1,6 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:nonnull:src:abstractsyntax; 
 
 imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 global nonnullQualifierName :: String = "edu:umn:cs:melt:exts:ableC:nonnull";
 
