@@ -1,24 +1,26 @@
 grammar edu:umn:cs:melt:exts:ableC:nonnull:src:abstractsyntax; 
 
+imports silver:langutil;
+imports silver:langutil:pp;
 imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-global nonnullQualifierName :: String = "edu:umn:cs:melt:exts:ableC:nonnull";
 
 abstract production nonnullQualifier
 top::Qualifier ::=
 {
-  local n :: String = nonnullQualifierName;
   local isPositive :: Boolean = false;
   local appliesWithinRef :: Boolean = true;
-  forwards to pluggableQualifier(n, isPositive, appliesWithinRef);
+  local compat :: (Boolean ::= Qualifier) = \qualToCompare::Qualifier ->
+    case qualToCompare of nonnullQualifier() -> true | _ -> false end;
+  forwards to pluggableQualifier(isPositive, appliesWithinRef, compat);
 }
 
 aspect production dereferenceOp
 top::UnaryOp ::=
 {
   top.errors <-
-    if   !containsQualifier(nonnullQualifierName, top.op.typerep)
+    if   !containsQualifier(nonnullQualifier(), top.op.typerep)
     then [err(top.location, "possible NULL dereference")]
     else [];
 }
@@ -27,7 +29,7 @@ aspect production memberExpr
 top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 {
   top.errors <-
-    if   deref && !containsQualifier(nonnullQualifierName, lhs.typerep)
+    if   deref && !containsQualifier(nonnullQualifier(), lhs.typerep)
     then [err(top.location, "possible NULL dereference")]
     else [];
 }
@@ -40,7 +42,7 @@ top::Declarator ::= name::Name ty::TypeModifierExpr attrs::[Attribute] initializ
     case initializer of
     | justInitializer(_) -> []
     | _ ->
-          if   containsQualifier(nonnullQualifierName, top.typerep)
+          if   containsQualifier(nonnullQualifier(), top.typerep)
           then [err(name.location, "nonnull pointer not initialized")]
           else []
     end;
