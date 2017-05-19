@@ -10,8 +10,8 @@ abstract production nonnullQualifier
 top::Qualifier ::=
 {
   propagate host, lifted;
-  top.pp = text(top.qualname);
-  top.qualname = "";
+  top.pp = text("");
+  top.qualname = "nonnull";
   top.qualIsPositive = false;
   top.qualIsNegative = true;
   top.qualAppliesWithinRef = true;
