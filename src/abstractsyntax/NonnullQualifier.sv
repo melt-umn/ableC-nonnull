@@ -9,11 +9,14 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 abstract production nonnullQualifier
 top::Qualifier ::=
 {
-  local isPositive :: Boolean = false;
-  local appliesWithinRef :: Boolean = true;
-  local compat :: (Boolean ::= Qualifier) = \qualToCompare::Qualifier ->
+  propagate host, lifted;
+  top.pp = text(top.qualname);
+  top.qualname = "";
+  top.qualIsPositive = false;
+  top.qualIsNegative = true;
+  top.qualAppliesWithinRef = true;
+  top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of nonnullQualifier() -> true | _ -> false end;
-  forwards to pluggableQualifier(isPositive, appliesWithinRef, compat);
 }
 
 aspect production dereferenceOp
