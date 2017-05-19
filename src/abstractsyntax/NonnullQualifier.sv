@@ -39,7 +39,7 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 
 -- TODO: should initialization be forced as part of the semantics of nonnull?
 aspect production declarator
-top::Declarator ::= name::Name ty::TypeModifierExpr attrs::[Attribute] initializer::MaybeInitializer
+top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initializer::MaybeInitializer
 {
   top.errors <-
     case initializer of
