@@ -9,14 +9,14 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 abstract production nonnullQualifier
 top::Qualifier ::=
 {
-  propagate host, lifted;
-  top.pp = text("");
-  top.qualname = "nonnull";
+  top.pp = text("nonnull");
+  top.mangledName = "nonnull";
   top.qualIsPositive = false;
   top.qualIsNegative = true;
   top.qualAppliesWithinRef = true;
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of nonnullQualifier() -> true | _ -> false end;
+  top.qualIsHost = false;
 }
 
 aspect production dereferenceOp
