@@ -17,13 +17,18 @@ top::Qualifier ::=
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of nonnullQualifier() -> true | _ -> false end;
   top.qualIsHost = false;
+  top.qualifyErrors =
+    case top.typeToQualify of
+      pointerType(_, _) -> []
+    | _                 -> [err(top.location, "`nonnull' cannot qualify a non-pointer")]
+    end;
 }
 
 aspect production dereferenceOp
 top::UnaryOp ::=
 {
   top.errors <-
-    if   !containsQualifier(nonnullQualifier(), top.op.typerep)
+    if   !containsQualifier(nonnullQualifier(location=bogusLoc()), top.op.typerep)
     then [err(top.location, "possible NULL dereference")]
     else [];
 }
@@ -32,7 +37,7 @@ aspect production memberExpr
 top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 {
   top.errors <-
-    if   deref && !containsQualifier(nonnullQualifier(), lhs.typerep)
+    if   deref && !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
     then [err(top.location, "possible NULL dereference")]
     else [];
 }
@@ -45,7 +50,7 @@ top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initialize
     case initializer of
     | justInitializer(_) -> []
     | _ ->
-          if   containsQualifier(nonnullQualifier(), top.typerep)
+          if   containsQualifier(nonnullQualifier(location=bogusLoc()), top.typerep)
           then [err(name.location, "nonnull pointer not initialized")]
           else []
     end;
@@ -54,6 +59,6 @@ top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initialize
 aspect production addressOfOp
 top::UnaryOp ::=
 {
-  top.collectedTypeQualifiers <- [nonnullQualifier()];
+  top.collectedTypeQualifiers <- [nonnullQualifier(location=bogusLoc())];
 }
 
