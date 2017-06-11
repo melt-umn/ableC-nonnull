@@ -27,31 +27,18 @@ top::Qualifier ::=
 aspect production dereferenceOp
 top::UnaryOp ::=
 {
-  -- TODO: allow user to specify regions to ignore errors?
-  local doCollectError :: Boolean =
-    !endsWith(".h", top.location.filename) &&
-    !endsWith(".xh", top.location.filename) &&
-    case top.location of txtLoc(_) -> false | _ -> true end;
-
   top.errors <-
-    if   doCollectError &&
-         !containsQualifier(nonnullQualifier(location=bogusLoc()), top.op.typerep)
-    then [err(top.location, "possible NULL dereference")]
+    if   !containsQualifier(nonnullQualifier(location=bogusLoc()), top.op.typerep)
+    then [errNullDereference(top.location)]
     else [];
 }
 
 aspect production memberExpr
 top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 {
-  local doCollectError :: Boolean =
-    !endsWith(".h", top.location.filename) &&
-    !endsWith(".xh", top.location.filename) &&
-    case top.location of txtLoc(_) -> false | _ -> true end;
-
   top.errors <-
-    if   deref && doCollectError &&
-         !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
-    then [err(top.location, "possible NULL dereference")]
+    if   deref && !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
+    then [errNullDereference(top.location)]
     else [];
 }
 
@@ -73,5 +60,38 @@ aspect production addressOfOp
 top::UnaryOp ::=
 {
   top.collectedTypeQualifiers <- [nonnullQualifier(location=bogusLoc())];
+}
+
+aspect production compilation
+top::Compilation ::= srcAst::Root
+{
+  -- TODO: allow user to specify regions to ignore errors?
+  -- TODO: allow user to control whether errors are raised from generated code?
+  local srcErrorFilter :: (Boolean ::= Message) =
+    \msg::Message ->
+      case msg of
+        errNullDereference(l) ->
+          endsWith(".h", l.filename) ||
+          endsWith(".xh", l.filename) ||
+          case l of txtLoc(_) -> true | _ -> false end
+      | _ -> true
+      end;
+
+  local hostErrorFilter :: (Boolean ::= Message) =
+    \msg::Message ->
+      case msg of
+        errNullDereference(l) -> false
+      | _                     -> true
+      end;
+
+  top.srcErrorFilters <- [srcErrorFilter];
+  top.hostErrorFilters <- [hostErrorFilter];
+  top.liftedErrorFilters <- [hostErrorFilter];
+}
+
+abstract production errNullDereference
+top::Message ::= l::Location
+{
+  forwards to err(l, "possible NULL dereference");
 }
 
