@@ -27,8 +27,15 @@ top::Qualifier ::=
 aspect production dereferenceOp
 top::UnaryOp ::=
 {
+  -- TODO: allow user to specify regions to ignore errors?
+  local doCollectError :: Boolean =
+    !endsWith(".h", top.location.filename) &&
+    !endsWith(".xh", top.location.filename) &&
+    case top.location of txtLoc(_) -> false | _ -> true end;
+
   top.errors <-
-    if   !containsQualifier(nonnullQualifier(location=bogusLoc()), top.op.typerep)
+    if   doCollectError &&
+         !containsQualifier(nonnullQualifier(location=bogusLoc()), top.op.typerep)
     then [err(top.location, "possible NULL dereference")]
     else [];
 }
@@ -36,8 +43,14 @@ top::UnaryOp ::=
 aspect production memberExpr
 top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 {
+  local doCollectError :: Boolean =
+    !endsWith(".h", top.location.filename) &&
+    !endsWith(".xh", top.location.filename) &&
+    case top.location of txtLoc(_) -> false | _ -> true end;
+
   top.errors <-
-    if   deref && !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
+    if   deref && doCollectError &&
+         !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
     then [err(top.location, "possible NULL dereference")]
     else [];
 }
