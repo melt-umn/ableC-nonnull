@@ -1,24 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void * nonnull safe_malloc(size_t size)
-{
-    void *ret = malloc(size);
-    if (ret == NULL) {
-        fprintf(stderr, "malloc returned NULL\n");
-        exit(255);
-    }
-    return (void * nonnull) ret;
-}
-
 int foo(int * nonnull p)
 {
+    /* if p were not qualified as nonnull then this would be a compile-time error */
     return *p;
 }
 
 int main(void)
 {
-    int * nonnull p = safe_malloc(sizeof(int));
+    /* a runtime check will be inserted with this cast */
+    int * nonnull p = (void * nonnull) malloc(sizeof(int));
     return foo(p);
 }
 
