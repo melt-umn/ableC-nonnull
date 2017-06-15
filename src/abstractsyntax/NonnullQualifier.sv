@@ -116,7 +116,8 @@ top::Expr ::= ty::TypeName e::Expr
       location=bogusLoc()
     );
   top.runtimeChecks <-
-    if   containsQualifier(nonnullQualifier(location=bogusLoc()), ty.typerep)
+    if containsQualifier(nonnullQualifier(location=bogusLoc()), ty.typerep) &&
+         !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
     then [pair(checkNull, "ERROR: attempted NULL dereference")]
     else [];
 }
