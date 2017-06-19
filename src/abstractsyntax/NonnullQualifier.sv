@@ -6,6 +6,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
 abstract production nonnullQualifier
 top::Qualifier ::=
@@ -25,8 +26,8 @@ top::Qualifier ::=
     end;
 }
 
-aspect production dereferenceOp
-top::UnaryOp ::=
+aspect production ovrld:dereferenceExpr
+top::Expr ::= e::Expr
 {
   -- TODO: allow user to specify regions to ignore errors?
   -- TODO: allow user to control whether errors are raised from generated code?
@@ -37,7 +38,7 @@ top::UnaryOp ::=
 
   top.errors <-
     if doCollectError &&
-         !containsQualifier(nonnullQualifier(location=bogusLoc()), top.op.typerep)
+         !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
     then [errNullDereference(top.location)]
     else [];
 
@@ -49,14 +50,14 @@ top::UnaryOp ::=
       location=bogusLoc()
     );
 
-  top.runtimeChecks <-
+  runtimeChecks <-
     if !doCollectError &&
-         !containsQualifier(nonnullQualifier(location=bogusLoc()), top.op.typerep)
+         !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
     then [pair(checkNull, "ERROR: attempted NULL dereference")]
     else [];
 }
 
-aspect production memberExpr
+aspect production ovrld:memberExpr
 top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 {
   local doCollectError :: Boolean =
@@ -65,21 +66,21 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
     case top.location of txtLoc(_) -> false | _ -> true end;
 
   top.errors <-
-    if doCollectError && deref &&
+    if doCollectError &&
          !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
     then [errNullDereference(top.location)]
     else [];
 
-  local checkNull :: (Expr ::= Expr) = \tmpE :: Expr ->
+  local checkNull :: (Expr ::= Expr) = \tmpLhs::Expr ->
     binaryOpExpr(
-      tmpE,
+      tmpLhs,
       compareOp(equalsOp(location=bogusLoc()), location=bogusLoc()),
       mkIntConst(0, bogusLoc()),
       location=bogusLoc()
     );
 
-  top.runtimeChecks <-
-    if !doCollectError && deref &&
+  runtimeChecks <-
+    if !doCollectError &&
          !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
     then [pair(checkNull, "ERROR: attempted NULL dereference")]
     else [];
@@ -105,7 +106,7 @@ top::UnaryOp ::=
   top.collectedTypeQualifiers <- [nonnullQualifier(location=bogusLoc())];
 }
 
-aspect production explicitCastExpr
+aspect production ovrld:explicitCastExpr
 top::Expr ::= ty::TypeName e::Expr
 {
   local checkNull :: (Expr ::= Expr) = \tmpE :: Expr ->
@@ -115,7 +116,7 @@ top::Expr ::= ty::TypeName e::Expr
       mkIntConst(0, bogusLoc()),
       location=bogusLoc()
     );
-  top.runtimeChecks <-
+  runtimeChecks <-
     if containsQualifier(nonnullQualifier(location=bogusLoc()), ty.typerep) &&
          !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
     then [pair(checkNull, "ERROR: attempted NULL dereference")]

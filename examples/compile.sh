@@ -29,7 +29,7 @@ basefilename="${filename_withoutpath%.*}"
 cfile="${basefilename}.pp_out.c"
 #cfile="${basefilename}.c"
 
-cmd="gcc ${link_sqlite3} ${cfile} -o ${basefilename}"
+cmd="gcc ${cfile} -o ${basefilename}"
 echo $cmd
 $cmd
 
