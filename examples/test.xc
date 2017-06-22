@@ -10,7 +10,7 @@ int foo(int * nonnull p)
 int main(void)
 {
     /* a runtime check will be inserted with this cast */
-    int *p = (void * nonnull) malloc(sizeof(int));
+    int * nonnull p = (void * nonnull) malloc(sizeof(int));
 
 //    while (true) {
 //        foo(p);

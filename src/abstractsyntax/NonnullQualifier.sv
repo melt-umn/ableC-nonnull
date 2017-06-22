@@ -128,18 +128,6 @@ top::Expr ::= ty::TypeName e::Expr
 aspect production compilation
 top::Compilation ::= srcAst::Root
 {
---  local srcErrorFilter :: (Boolean ::= Message) =
---    \msg::Message ->
---      case msg of
---        errNullDereference(l) ->
---          endsWith(".h", l.filename) ||
---          endsWith(".xh", l.filename) ||
---          case l of txtLoc(_) -> true | _ -> false end
---      | _ -> true
---      end;
---  -- why is this filtering out source null dereferences?
---  top.srcErrorFilters <- [srcErrorFilter];
-
   -- filter out false errors that were added to the host tree only because
   -- qualifiers were removed
   local hostErrorFilter :: (Boolean ::= Message) =
