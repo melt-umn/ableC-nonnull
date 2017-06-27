@@ -53,7 +53,7 @@ top::Expr ::= e::Expr
   runtimeChecks <-
     if suppressError &&
          !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
-    then [pair(checkNull, "ERROR: attempted NULL dereference")]
+    then [pair(checkNull, "ERROR: attempted NULL dereference\\n")]
     else [];
 }
 
@@ -79,7 +79,7 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
   runtimeChecks <-
     if suppressError &&
          !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
-    then [pair(checkNull, "ERROR: attempted NULL dereference")]
+    then [pair(checkNull, "ERROR: attempted NULL dereference\\n")]
     else [];
 }
 
@@ -121,7 +121,7 @@ top::Expr ::= ty::TypeName e::Expr
   runtimeChecks <-
     if containsQualifier(nonnullQualifier(location=bogusLoc()), ty.typerep) &&
          !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
-    then [pair(checkNull, "ERROR: attempted NULL dereference")]
+    then [pair(checkNull, "ERROR: attempted cast NULL to nonnull\\n")]
     else [];
 }
 
