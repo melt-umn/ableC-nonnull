@@ -1,0 +1,13 @@
+#ifndef __NONNULL_XH
+#define __NONNULL_XH
+
+#include <stdio.h>
+
+int fgetc(FILE * nonnull stream);
+char *fgets(char *s, int size, FILE * nonnull stream);
+int getc(FILE * nonnull stream);
+int getchar(void);
+int ungetc(int c, FILE * nonnull stream);
+
+#endif
+
