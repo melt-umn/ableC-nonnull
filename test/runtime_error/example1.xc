@@ -10,15 +10,8 @@ int foo(int * nonnull p)
 int main(void)
 {
     /* a runtime check will be inserted with this cast */
-    int * nonnull p = (void * nonnull) malloc(sizeof(int));
-
-//    while (true) {
-//        foo(p);
-//        p = NULL;
-//    }
-
-//    int **q = &p;
-//    *q = NULL;
+//    int * nonnull p = (void * nonnull) malloc(sizeof(int));
+    int * nonnull p = (void * nonnull) NULL;
 
     return foo(p);
 }

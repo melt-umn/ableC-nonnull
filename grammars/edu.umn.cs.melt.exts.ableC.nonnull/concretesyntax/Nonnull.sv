@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:exts:ableC:nonnull:src:concretesyntax:typeQualifier;
+grammar edu:umn:cs:melt:exts:ableC:nonnull:concretesyntax;
 
 -- Import host language components
 imports edu:umn:cs:melt:ableC:concretesyntax;
@@ -8,7 +8,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction as abs;
 
 -- Some library utilities and the nonnull abstract syntax
 imports silver:langutil;
-imports edu:umn:cs:melt:exts:ableC:nonnull:src:abstractsyntax ;
+imports edu:umn:cs:melt:exts:ableC:nonnull:abstractsyntax;
 
 marking terminal Nonnull_t 'nonnull' lexer classes {Ckeyword};
 

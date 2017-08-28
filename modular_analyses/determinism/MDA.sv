@@ -1,8 +1,9 @@
-grammar edu:umn:cs:melt:exts:ableC:nonnull:modular_analyses:determinism;
+grammar determinism;
 
-import edu:umn:cs:melt:ableC:host only ablecParser;
+import edu:umn:cs:melt:ableC:host;
 
-copper_mda testTypeQualifier(ablecParser) {
-  edu:umn:cs:melt:exts:ableC:nonnull:src:concretesyntax:typeQualifier;
+copper_mda testStmt(ablecParser) {
+  edu:umn:cs:melt:ableC:host;
+  edu:umn:cs:melt:exts:ableC:nonnull;
 }
 
