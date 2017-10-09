@@ -17,7 +17,7 @@ top::Qualifier ::=
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of nonnullQualifier() -> true | _ -> false end;
   top.qualIsHost = false;
-  top.qualifyErrors =
+  top.errors :=
     case top.typeToQualify of
       pointerType(_, _) -> []
     | _                 -> [err(top.location, "`nonnull' cannot qualify a non-pointer")]
@@ -50,10 +50,10 @@ top::Expr ::= e::Expr
 
   -- possible errors in .h files or in generated code are checked at runtime
   -- if the compile-time is suppressed
-  runtimeChecks <-
+  runtimeMods <-
     if suppressError &&
          !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
-    then [pair(checkNull, "ERROR: attempted NULL dereference\\n")]
+    then [runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
     else [];
 }
 
@@ -76,10 +76,10 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
       location=bogusLoc()
     );
 
-  runtimeChecks <-
+  runtimeMods <-
     if suppressError &&
          !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
-    then [pair(checkNull, "ERROR: attempted NULL dereference\\n")]
+    then [runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
     else [];
 }
 
@@ -118,10 +118,10 @@ top::Expr ::= ty::TypeName e::Expr
       mkIntConst(0, bogusLoc()),
       location=bogusLoc()
     );
-  runtimeChecks <-
+  runtimeMods <-
     if containsQualifier(nonnullQualifier(location=bogusLoc()), ty.typerep) &&
          !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
-    then [pair(checkNull, "ERROR: attempted cast NULL to nonnull\\n")]
+    then [runtimeCheck(checkNull, "ERROR: attempted cast of NULL to nonnull\\n", top.location)]
     else [];
 }
 
