@@ -6,6 +6,8 @@ imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 
+global MODULE_NAME :: String = "edu:umn:cs:melt:exts:ableC:nonnull";
+
 abstract production nonnullQualifier
 top::Qualifier ::=
 {
@@ -36,23 +38,23 @@ top::Expr ::= e::Expr
   -- filtered out later.
   top.errors <-
     if !suppressError &&
-         !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
+         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
     then [errNullDereference(top.location)]
     else [];
 
   local checkNull :: (Expr ::= Expr) = \tmpE :: Expr ->
     binaryOpExpr(
       tmpE,
-      compareOp(equalsOp(location=bogusLoc()), location=bogusLoc()),
-      mkIntConst(0, bogusLoc()),
-      location=bogusLoc()
+      compareOp(equalsOp(location=builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME)),
+      mkIntConst(0, builtinLoc(MODULE_NAME)),
+      location=builtinLoc(MODULE_NAME)
     );
 
   -- possible errors in .h files or in generated code are checked at runtime
   -- if the compile-time is suppressed
   runtimeMods <-
     if suppressError &&
-         !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
+         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
     then [runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
     else [];
 }
@@ -64,21 +66,21 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 
   top.errors <-
     if !suppressError &&
-         !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
+         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), lhs.typerep)
     then [errNullDereference(top.location)]
     else [];
 
   local checkNull :: (Expr ::= Expr) = \tmpLhs::Expr ->
     binaryOpExpr(
       tmpLhs,
-      compareOp(equalsOp(location=bogusLoc()), location=bogusLoc()),
-      mkIntConst(0, bogusLoc()),
-      location=bogusLoc()
+      compareOp(equalsOp(location=builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME)),
+      mkIntConst(0, builtinLoc(MODULE_NAME)),
+      location=builtinLoc(MODULE_NAME)
     );
 
   runtimeMods <-
     if suppressError &&
-         !containsQualifier(nonnullQualifier(location=bogusLoc()), lhs.typerep)
+         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), lhs.typerep)
     then [runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
     else [];
 }
@@ -95,7 +97,7 @@ top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initialize
       case initializer of
       | justInitializer(_) -> []
       | _ ->
-            if   containsQualifier(nonnullQualifier(location=bogusLoc()), top.typerep)
+            if   containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), top.typerep)
             then [err(name.location, "nonnull pointer not initialized")]
             else []
       end
@@ -105,7 +107,7 @@ top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initialize
 aspect production addressOfOp
 top::UnaryOp ::=
 {
-  top.collectedTypeQualifiers <- [nonnullQualifier(location=bogusLoc())];
+  top.collectedTypeQualifiers <- [nonnullQualifier(location=builtinLoc(MODULE_NAME))];
 }
 
 aspect production explicitCastExpr
@@ -114,13 +116,13 @@ top::Expr ::= ty::TypeName e::Expr
   local checkNull :: (Expr ::= Expr) = \tmpE :: Expr ->
     binaryOpExpr(
       tmpE,
-      compareOp(equalsOp(location=bogusLoc()), location=bogusLoc()),
-      mkIntConst(0, bogusLoc()),
-      location=bogusLoc()
+      compareOp(equalsOp(location=builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME)),
+      mkIntConst(0, builtinLoc(MODULE_NAME)),
+      location=builtinLoc(MODULE_NAME)
     );
   runtimeMods <-
-    if containsQualifier(nonnullQualifier(location=bogusLoc()), ty.typerep) &&
-         !containsQualifier(nonnullQualifier(location=bogusLoc()), e.typerep)
+    if containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), ty.typerep) &&
+         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
     then [runtimeCheck(checkNull, "ERROR: attempted cast of NULL to nonnull\\n", top.location)]
     else [];
 }
