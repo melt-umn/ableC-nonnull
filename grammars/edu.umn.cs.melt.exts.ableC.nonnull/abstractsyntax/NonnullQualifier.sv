@@ -5,6 +5,7 @@ imports silver:langutil:pp;
 imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
+imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 
 global MODULE_NAME :: String = "edu:umn:cs:melt:exts:ableC:nonnull";
 
@@ -26,7 +27,7 @@ top::Qualifier ::=
     end;
 }
 
-aspect production dereferenceExpr
+aspect production inj:dereferenceExpr
 top::Expr ::= e::Expr
 {
   -- true if a detected error should be suppressed; false if it should be raised
@@ -55,11 +56,11 @@ top::Expr ::= e::Expr
   runtimeMods <-
     if suppressError &&
          !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
-    then [runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
+    then [inj:runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
     else [];
 }
 
-aspect production memberExpr
+aspect production inj:memberExpr
 top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 {
   local suppressError :: Boolean = checkSuppressError(top.location);
@@ -81,7 +82,7 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
   runtimeMods <-
     if suppressError &&
          !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), lhs.typerep)
-    then [runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
+    then [inj:runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
     else [];
 }
 
@@ -107,10 +108,10 @@ top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initialize
 aspect production addressOfOp
 top::UnaryOp ::=
 {
-  top.collectedTypeQualifiers <- [nonnullQualifier(location=builtinLoc(MODULE_NAME))];
+  top.injectedQualifiers <- [nonnullQualifier(location=builtinLoc(MODULE_NAME))];
 }
 
-aspect production explicitCastExpr
+aspect production inj:explicitCastExpr
 top::Expr ::= ty::TypeName e::Expr
 {
   local checkNull :: (Expr ::= Expr) = \tmpE :: Expr ->
@@ -123,7 +124,7 @@ top::Expr ::= ty::TypeName e::Expr
   runtimeMods <-
     if containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), ty.typerep) &&
          !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
-    then [runtimeCheck(checkNull, "ERROR: attempted cast of NULL to nonnull\\n", top.location)]
+    then [inj:runtimeCheck(checkNull, "ERROR: attempted cast of NULL to nonnull\\n", top.location)]
     else [];
 }
 
