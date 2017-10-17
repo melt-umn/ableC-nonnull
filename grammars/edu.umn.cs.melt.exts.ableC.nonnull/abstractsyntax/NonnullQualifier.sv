@@ -37,19 +37,14 @@ top::Expr ::= e::Expr
   -- or generated code). This will collect errors in the host tree where
   -- qualifiers have been removed; these host-tree errors will be added now then
   -- filtered out later.
-  top.errors <-
+  lerrors <-
     if !suppressError &&
          !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
     then [errNullDereference(top.location)]
     else [];
 
   local checkNull :: (Expr ::= Expr) = \tmpE :: Expr ->
-    binaryOpExpr(
-      tmpE,
-      compareOp(equalsOp(location=builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME)),
-      mkIntConst(0, builtinLoc(MODULE_NAME)),
-      location=builtinLoc(MODULE_NAME)
-    );
+    equalsExpr(tmpE, mkIntConst(0, builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME));
 
   -- possible errors in .h files or in generated code are checked at runtime
   -- if the compile-time is suppressed
@@ -65,19 +60,14 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 {
   local suppressError :: Boolean = checkSuppressError(top.location);
 
-  top.errors <-
+  lerrors <-
     if !suppressError &&
          !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), lhs.typerep)
     then [errNullDereference(top.location)]
     else [];
 
   local checkNull :: (Expr ::= Expr) = \tmpLhs::Expr ->
-    binaryOpExpr(
-      tmpLhs,
-      compareOp(equalsOp(location=builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME)),
-      mkIntConst(0, builtinLoc(MODULE_NAME)),
-      location=builtinLoc(MODULE_NAME)
-    );
+    equalsExpr(tmpLhs, mkIntConst(0, builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME));
 
   runtimeMods <-
     if suppressError &&
@@ -115,12 +105,8 @@ aspect production inj:explicitCastExpr
 top::Expr ::= ty::TypeName e::Expr
 {
   local checkNull :: (Expr ::= Expr) = \tmpE :: Expr ->
-    binaryOpExpr(
-      tmpE,
-      compareOp(equalsOp(location=builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME)),
-      mkIntConst(0, builtinLoc(MODULE_NAME)),
-      location=builtinLoc(MODULE_NAME)
-    );
+    equalsExpr(tmpE, mkIntConst(0, builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME));
+
   runtimeMods <-
     if containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), ty.typerep) &&
          !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
