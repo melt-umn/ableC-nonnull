@@ -95,10 +95,10 @@ top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initialize
     else [];
 }
 
-aspect production addressOfOp
-top::UnaryOp ::=
+aspect production inj:addressOfExpr
+top::Expr ::= e::Expr
 {
-  top.injectedQualifiers <- [nonnullQualifier(location=builtinLoc(MODULE_NAME))];
+  injectedQualifiers <- [nonnullQualifier(location=builtinLoc(MODULE_NAME))];
 }
 
 aspect production inj:explicitCastExpr
