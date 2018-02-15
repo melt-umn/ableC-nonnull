@@ -61,7 +61,7 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
   local suppressError :: Boolean = checkSuppressError(top.location);
 
   lerrors <-
-    if !suppressError &&
+    if !suppressError && deref &&
          !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), lhs.typerep)
     then [errNullDereference(top.location)]
     else [];
