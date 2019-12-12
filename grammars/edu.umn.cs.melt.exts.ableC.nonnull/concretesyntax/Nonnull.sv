@@ -10,7 +10,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction as abs;
 imports silver:langutil;
 imports edu:umn:cs:melt:exts:ableC:nonnull:abstractsyntax;
 
-marking terminal Nonnull_t 'nonnull' lexer classes {Ckeyword};
+marking terminal Nonnull_t 'nonnull' lexer classes {Keyword, Global};
 
 concrete production nonnullTypeQualifier_c
 top::TypeQualifier_c ::= 'nonnull'
