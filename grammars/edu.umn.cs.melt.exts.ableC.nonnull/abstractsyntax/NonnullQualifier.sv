@@ -127,7 +127,6 @@ top::Compilation ::= srcAst::Root
       end;
 
   top.hostErrorFilters <- [hostErrorFilter];
-  top.liftedErrorFilters <- [hostErrorFilter];
 }
 
 abstract production errNullDereference
