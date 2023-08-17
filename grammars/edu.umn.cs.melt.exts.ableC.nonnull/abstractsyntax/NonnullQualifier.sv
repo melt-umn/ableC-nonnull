@@ -7,8 +7,6 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 
-global MODULE_NAME :: String = "edu:umn:cs:melt:exts:ableC:nonnull";
-
 abstract production nonnullQualifier
 top::Qualifier ::=
 {
@@ -23,7 +21,7 @@ top::Qualifier ::=
   top.errors :=
     case top.typeToQualify of
       pointerType(_, _) -> []
-    | _                 -> [err(top.location, "`nonnull' cannot qualify a non-pointer")]
+    | _                 -> [errFromOrigin(top, "`nonnull' cannot qualify a non-pointer")]
     end;
 }
 
@@ -31,7 +29,7 @@ aspect production inj:dereferenceExpr
 top::Expr ::= e::Expr
 {
   -- true if a detected error should be suppressed; false if it should be raised
-  local suppressError :: Boolean = checkSuppressError(top.location);
+  local suppressError :: Boolean = checkSuppressError();
 
   -- Collect the compile-time error if it is not suppressed (e.g. for .h files
   -- or generated code). This will collect errors in the host tree where
@@ -39,40 +37,40 @@ top::Expr ::= e::Expr
   -- filtered out later.
   lerrors <-
     if !suppressError &&
-         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
-    then [errNullDereference(top.location)]
+         !containsQualifier(nonnullQualifier(), e.typerep)
+    then [errNullDereference()]
     else [];
 
   local checkNull :: (Expr ::= Expr) = \tmpE :: Expr ->
-    equalsExpr(tmpE, mkIntConst(0, builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME));
+    equalsExpr(tmpE, mkIntConst(0));
 
   -- possible errors in .h files or in generated code are checked at runtime
   -- if the compile-time is suppressed
   runtimeMods <-
     if suppressError &&
-         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
-    then [inj:runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
+         !containsQualifier(nonnullQualifier(), e.typerep)
+    then [inj:runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n")]
     else [];
 }
 
 aspect production inj:memberExpr
 top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 {
-  local suppressError :: Boolean = checkSuppressError(top.location);
+  local suppressError :: Boolean = checkSuppressError();
 
   lerrors <-
     if !suppressError && deref &&
-         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), lhs.typerep)
-    then [errNullDereference(top.location)]
+         !containsQualifier(nonnullQualifier(), lhs.typerep)
+    then [errNullDereference()]
     else [];
 
   local checkNull :: (Expr ::= Expr) = \tmpLhs::Expr ->
-    equalsExpr(tmpLhs, mkIntConst(0, builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME));
+    equalsExpr(tmpLhs, mkIntConst(0));
 
   runtimeMods <-
     if suppressError &&
-         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), lhs.typerep)
-    then [inj:runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n", top.location)]
+         !containsQualifier(nonnullQualifier(), lhs.typerep)
+    then [inj:runtimeCheck(checkNull, "ERROR: attempted NULL dereference\\n")]
     else [];
 }
 
@@ -80,7 +78,7 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
 aspect production declarator
 top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initializer::MaybeInitializer
 {
-  local suppressError :: Boolean = checkSuppressError(top.sourceLocation);
+  local suppressError :: Boolean = checkSuppressError();
 
   top.errors <-
     if !suppressError
@@ -88,8 +86,8 @@ top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initialize
       case initializer of
       | justInitializer(_) -> []
       | _ ->
-            if   containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), top.typerep)
-            then [err(name.location, "nonnull pointer not initialized")]
+            if   containsQualifier(nonnullQualifier(), top.typerep)
+            then [errFromOrigin(name, "nonnull pointer not initialized")]
             else []
       end
     else [];
@@ -98,19 +96,19 @@ top::Declarator ::= name::Name ty::TypeModifierExpr attrs::Attributes initialize
 aspect production inj:addressOfExpr
 top::Expr ::= e::Expr
 {
-  injectedQualifiers <- [nonnullQualifier(location=builtinLoc(MODULE_NAME))];
+  injectedQualifiers <- [nonnullQualifier()];
 }
 
 aspect production inj:explicitCastExpr
 top::Expr ::= ty::TypeName e::Expr
 {
   local checkNull :: (Expr ::= Expr) = \tmpE :: Expr ->
-    equalsExpr(tmpE, mkIntConst(0, builtinLoc(MODULE_NAME)), location=builtinLoc(MODULE_NAME));
+    equalsExpr(tmpE, mkIntConst(0));
 
   runtimeMods <-
-    if containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), ty.typerep) &&
-         !containsQualifier(nonnullQualifier(location=builtinLoc(MODULE_NAME)), e.typerep)
-    then [inj:runtimeCheck(checkNull, "ERROR: attempted cast of NULL to nonnull\\n", top.location)]
+    if containsQualifier(nonnullQualifier(), ty.typerep) &&
+         !containsQualifier(nonnullQualifier(), e.typerep)
+    then [inj:runtimeCheck(checkNull, "ERROR: attempted cast of NULL to nonnull\\n")]
     else [];
 }
 
@@ -122,30 +120,27 @@ top::Compilation ::= srcAst::Root
   local hostErrorFilter :: (Boolean ::= Message) =
     \msg::Message ->
       case msg of
-        errNullDereference(l) -> false
-      | _                     -> true
+        errNullDereference() -> false
+      | _                    -> true
       end;
 
   top.hostErrorFilters <- [hostErrorFilter];
 }
 
 abstract production errNullDereference
-top::Message ::= l::Location
+top::Message ::=
 {
-  forwards to err(l, "possible NULL dereference");
+  forwards to errFromOrigin(ambientOrigin(), "possible NULL dereference");
 }
 
 -- return true if an error at this location should be suppressed
 function checkSuppressError
-Boolean ::= loc::Location
+Boolean ::=
 {
   -- TODO: allow user to specify regions to ignore errors?
   -- TODO: allow user to control whether errors are raised from generated code?
 
-  -- suppress errors in .h files and in generated code
-  return
-    endsWith(".h", loc.filename) ||
-    endsWith(".xh", loc.filename) ||
-    case loc of txtLoc(_) -> true | _ -> false end;
+  -- suppress errors in generated code
+  return originatesInExt(getOriginInfoChain(ambientOrigin())).isJust;
 }
 
