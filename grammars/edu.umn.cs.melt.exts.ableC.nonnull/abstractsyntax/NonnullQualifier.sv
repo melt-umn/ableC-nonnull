@@ -132,7 +132,9 @@ top::Compilation ::= srcAst::Root
 abstract production errNullDereference
 top::Message ::= l::Location
 {
-  forwards to err(l, "possible NULL dereference");
+  top.where = l;
+  top.message = "possible NULL dereference";
+  top.severity = 2;
 }
 
 -- return true if an error at this location should be suppressed
