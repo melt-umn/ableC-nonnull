@@ -130,7 +130,9 @@ top::Compilation ::= srcAst::Root
 abstract production errNullDereference
 top::Message ::=
 {
-  forwards to errFromOrigin(ambientOrigin(), "possible NULL dereference");
+  top.where = getParsedOriginLocationOrFallback(top);
+  top.message = "possible NULL dereference";
+  top.severity = 2;
 }
 
 -- return true if an error at this location should be suppressed
