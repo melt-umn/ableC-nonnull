@@ -15,7 +15,7 @@ marking terminal Nonnull_t 'nonnull' lexer classes {Keyword, Global};
 concrete production nonnullTypeQualifier_c
 top::TypeQualifier_c ::= 'nonnull'
 {
-  top.typeQualifiers = abs:foldQualifier([nonnullQualifier(location=top.location)]);
+  top.typeQualifiers = abs:foldQualifier([nonnullQualifier()]);
   top.mutateTypeSpecifiers = [];
 }
 
